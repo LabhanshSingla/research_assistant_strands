@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AI Research Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="/static/style.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="container">
+    <h1>AI Research Assistant</h1>
+
+    <form id="qform">
+      <label>Research question / topic</label>
+      <input type="text" name="prompt" id="prompt" placeholder="e.g., federated learning privacy" required />
+
+      <div class="row">
+        <div>
+          <label>Max papers</label>
+          <input type="number" name="max_results" id="max_results" value="3" min="1" max="10" />
+        </div>
+        <div>
+          <label>Bullets per paper</label>
+          <input type="number" name="bullets" id="bullets" value="5" min="1" max="10" />
+        </div>
+      </div>
+
+      <button type="submit">Search & Summarize</button>
+    </form>
+
+    <div id="status"></div>
+    <pre id="output" class="output"></pre>
+  </div>
+
+  <script>
+    const form = document.getElementById('qform');
+    const status = document.getElementById('status');
+    const output = document.getElementById('output');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.textContent = 'Working…';
+      output.textContent = '';
+
+      const fd = new FormData(form);
+      try {
+        const res = await fetch('/api/query', { method: 'POST', body: fd });
+        const data = await res.json();
+        status.textContent = '';
+
+        if (data.error) {
+          output.textContent = 'Error: ' + data.error;
+          return;
+        }
+
+        output.textContent = `Query: ${data.query}\n\n${data.answer}`;
+      } catch (err) {
+        status.textContent = '';
+        output.textContent = 'Error: ' + err;
+      }
+    });
+  </script>
+</body>
+</html>
